@@ -21,7 +21,6 @@ async function PromiseAllObj(obj) {
 }
 
 async function loadMapFromJSON() {
-  console.log('load started');
   const jsonObj = await PromiseAllObj({
     intersections: fetchJSON('./intersections.json'),
     points: fetchJSON('./points.json'),
@@ -34,7 +33,6 @@ async function loadMapFromJSON() {
   const polylines = [...roads.values()].map(road=> `<polyline points="${road.points.map(point=>points[point]).join(' ')}" />`);
 
   document.querySelector('g.roads').insertAdjacentHTML('beforeEnd', polylines);
-  console.log('load completed');
 }
 
 loadMapFromJSON();
