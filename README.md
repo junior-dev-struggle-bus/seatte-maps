@@ -1,4 +1,3 @@
 # seatte-maps
 
-https://junior-dev-struggle-bus.github.io/seatte-maps/mapSite.html
-
+https://junior-dev-struggle-bus.github.io/seattle-maps/
