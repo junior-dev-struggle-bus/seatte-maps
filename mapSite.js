@@ -6,6 +6,39 @@ function assert(tf) {
   }
 }
 
+async function fetchJSON(url) {
+  const response = await fetch(url);
+  const ret = response.json();
+  return ret;
+}
+
+async function PromiseAllObj(obj) {
+  const ret = {};
+  for(let [k, v] of Object.entries(obj)) {
+    ret[k] = await v;
+  }
+  return ret;
+}
+
+async function loadMapFromJSON() {
+  console.log('load started');
+  const jsonObj = await PromiseAllObj({
+    intersections: fetchJSON('./intersections.json'),
+    points: fetchJSON('./points.json'),
+    roads: fetchJSON('./roads.json'),
+  });
+  const intersections = new Map(Object.entries(jsonObj.intersections));
+  const roads = new Map(Object.entries(jsonObj.roads));
+  const points = jsonObj.points;
+
+  const polylines = [...roads.values()].map(road=> `<polyline points="${road.points.map(point=>points[point]).join(' ')}" />`);
+
+  document.querySelector('g.roads').insertAdjacentHTML('beforeEnd', polylines);
+  console.log('load completed');
+}
+
+loadMapFromJSON();
+
 async function loadMap() {
   const kdom = (new DOMParser()).parseFromString((await (await fetch('./Street_Network_Database_SND.kml')).text()), "application/xml");
   console.log(kdom);
@@ -79,7 +112,6 @@ async function loadMap() {
     addIntersection(T_INTR_ID, pointTo, OBJECTID);
 
   }
-  //console.log({intersections, roads, allPoints});
   // <polyline points="100,100 150,25 150,75 200,0" />
 
   // const pointBuffer = new Float32Array([...allPoints.keys()].flatMap(v=> v.split(',').map(parseFloat)));
@@ -92,6 +124,16 @@ async function loadMap() {
   });
 
   document.querySelector('g.roads').insertAdjacentHTML('beforeEnd', lines);
+  console.log({intersections, roads, allPoints, pointList});
+
+  const jsonObj = {
+    intersections: Object.fromEntries([...intersections.entries()].map(([key, value])=> [key, {location: value.location, nodes: [...value.nodes.values()]}])),
+    pointList,
+    roads: Object.fromEntries([...roads.entries()].map(([key, value])=> [key, value])),
+  };
+  console.log(JSON.stringify(jsonObj.intersections));
+  console.log(JSON.stringify(jsonObj.pointList));
+  console.log(JSON.stringify(jsonObj.roads));
 }
 
-loadMap();
+//loadMap();
