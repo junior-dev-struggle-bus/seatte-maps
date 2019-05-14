@@ -77,9 +77,7 @@ async function loadMap() {
     addIntersection(T_INTR_ID, pointTo, OBJECTID);
 
   }
-  console.log(intersections);
-  console.log(roads);
-  console.log(allPoints);
+  console.log({intersections, roads, allPoints});
   // const pointBuffer = new Float32Array([...allPoints.keys()].flatMap(v=> v.split(',').map(parseFloat)));
   // console.log(pointBuffer);
 }
