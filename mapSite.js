@@ -66,18 +66,20 @@ async function loadMap() {
     const properties = decodeSimpleData(Placemark);
 
     const {OBJECTID, F_INTR_ID, T_INTR_ID} = properties;
-    roads.set(OBJECTID, properties);
-
     const coordinates = Placemark.querySelector('coordinates');
     const points = coordinates.textContent.split(/\s+/g).map(getPointID);
     const pointFrom = points[0];
     const pointTo = points[points.length - 1];
-    
+
+    roads.set(OBJECTID, {...properties, points});
+
     addIntersection(F_INTR_ID, pointFrom, OBJECTID);
     addIntersection(T_INTR_ID, pointTo, OBJECTID);
 
   }
   console.log({intersections, roads, allPoints});
+  // <polyline points="100,100 150,25 150,75 200,0" />
+
   // const pointBuffer = new Float32Array([...allPoints.keys()].flatMap(v=> v.split(',').map(parseFloat)));
   // console.log(pointBuffer);
 }
