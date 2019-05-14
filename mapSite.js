@@ -30,6 +30,7 @@ async function loadMap() {
   schema.SNDSEG_UPDATE.decoder = decoders.date;
 
   const allPoints = new Map();
+  const pointList = [];
   const intersections = new Map();
   const roads = new Map();
 
@@ -38,6 +39,7 @@ async function loadMap() {
       allPoints.set(location, {
         id: allPoints.size,
       });
+      pointList.push(location);
     }
     return allPoints.get(location).id;
   }
@@ -77,11 +79,19 @@ async function loadMap() {
     addIntersection(T_INTR_ID, pointTo, OBJECTID);
 
   }
-  console.log({intersections, roads, allPoints});
+  //console.log({intersections, roads, allPoints});
   // <polyline points="100,100 150,25 150,75 200,0" />
 
   // const pointBuffer = new Float32Array([...allPoints.keys()].flatMap(v=> v.split(',').map(parseFloat)));
   // console.log(pointBuffer);
+
+  const lines = [...roads.values()].map(road=> {
+    let {points} = road;
+    let gpsPoints = points.map(point=>pointList[point]);
+    return `<polyline points="${gpsPoints.join(' ')}" />`;
+  });
+
+  document.querySelector('g.roads').insertAdjacentHTML('beforeEnd', lines);
 }
 
 loadMap();
