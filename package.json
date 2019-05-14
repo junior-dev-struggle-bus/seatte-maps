@@ -1,0 +1,19 @@
+{
+  "name": "seattle-maps",
+  "version": "1.0.0",
+  "description": "https://junior-dev-struggle-bus.github.io/seatte-maps/mapSite.html",
+  "main": "index.js",
+  "scripts": {
+    "test": "test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/junior-dev-struggle-bus/seattle-maps.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/junior-dev-struggle-bus/seattle-maps/issues"
+  },
+  "homepage": "https://github.com/junior-dev-struggle-bus/seattle-maps#readme"
+}
