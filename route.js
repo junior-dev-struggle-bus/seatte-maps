@@ -8,7 +8,7 @@ async function promiseTimeout(msec) {
 Should really refactor into a CLASS
 */
 
-function breadthFirstSort({start, finish, intersections, roads, pointNumbers}, a, b) {
+function breadthFirstSort({perNodeInfo, start, finish, intersections, roads, pointNumbers}, a, b) {
   function intersectionID_to_gps(id) {
     return pointNumbers[intersections.get(id).location];
   }
@@ -33,7 +33,7 @@ function breadthFirstSort({start, finish, intersections, roads, pointNumbers}, a
   return b_to_start - a_to_start;
 }
 
-function closestToFinishFirstSort({start, finish, intersections, roads, pointNumbers}, a, b) {
+function closestToFinishFirstSort({perNodeInfo, start, finish, intersections, roads, pointNumbers}, a, b) {
   function intersectionID_to_gps(id) {
     return pointNumbers[intersections.get(id).location];
   }
@@ -52,11 +52,41 @@ function closestToFinishFirstSort({start, finish, intersections, roads, pointNum
   const finishGPS = intersectionID_to_gps(finish);
   const aGPS = intersectionID_to_gps(a);
   const bGPS = intersectionID_to_gps(b);
-  const a_to_start = intersectionDistance(a, finish);
-  const b_to_start = intersectionDistance(b, finish);
+  const a_to_finish = intersectionDistance(a, finish);
+  const b_to_finish = intersectionDistance(b, finish);
 
-  return b_to_start - a_to_start;
+  return b_to_finish - a_to_finish;
 }
+
+function AStarSort({perNodeInfo, start, finish, intersections, roads, pointNumbers}, a, b) {
+  //cost so far (accurate) + estimated cost remaining (must be underestimated)
+
+  function intersectionID_to_gps(id) {
+    return pointNumbers[intersections.get(id).location];
+  }
+  function intersectionDistance(a, b) {
+    const pa = intersectionID_to_gps(a);
+    const pb = intersectionID_to_gps(b);
+    //replace with HAVERSINE
+    const ret = Math.sqrt(((pb.x - pa.x) ** 2) + ((pb.y - pa.y) ** 2));
+    if(Number.isNaN(ret)) {
+      throw new TypeError('no nans!');
+    }
+    return ret;
+  }
+
+  const startGPS = intersectionID_to_gps(start);
+  const finishGPS = intersectionID_to_gps(finish);
+  const aGPS = intersectionID_to_gps(a);
+  const bGPS = intersectionID_to_gps(b);
+  const a_to_finish = intersectionDistance(a, finish);
+  const b_to_finish = intersectionDistance(b, finish);
+  const a_cost_so_far = perNodeInfo.get(a).cost_so_far;
+  const b_cost_so_far = perNodeInfo.get(b).cost_so_far;
+
+  return (b_to_finish + b_cost_so_far) - (a_to_finish + a_cost_so_far);
+}
+
 
 onmessage = async function(evt) {
   const {
@@ -77,21 +107,41 @@ onmessage = async function(evt) {
 
   const uColors = new Uint32Array(sbColors);
 
-  uColors.forEach((v, i , a)=> a[i] = 0x00000000);
+  uColors.forEach((v, i , a)=> a[i] = 0x00404040);
 
   const start = [...intersections.keys()][(Math.random() * intersections.size) >>> 0];
   const finish = [...intersections.keys()][(Math.random() * intersections.size) >>> 0];
-  uColors[intersections.get(start).location] = 0xFF0000FF;
-  uColors[intersections.get(finish).location] = 0xFF00FF00;
+  uColors[intersections.get(start).location] = 0xFF0000FF; //turn it red
+  uColors[intersections.get(finish).location] = 0xFF00FF00; //turn it greem
 
   const bestNodes = [start];
   const visitedNodes = new Set();
 
-  //const sortFunction = breadthFirstSort.bind(null, {start, finish, intersections, roads, pointNumbers});
-  const sortFunction = closestToFinishFirstSort.bind(null, {start, finish, intersections, roads, pointNumbers});
+  const perNodeInfo = new Map();
+  //const sortFunction = breadthFirstSort.bind(null, {start, finish, intersections, roads, pointNumbers, perNodeInfo});
+  //const sortFunction = closestToFinishFirstSort.bind(null, {start, finish, intersections, roads, pointNumbers, perNodeInfo});
+  const sortFunction = AStarSort.bind(null, {start, finish, intersections, roads, pointNumbers, perNodeInfo});
   
+  function intersectionID_to_gps(id) {
+    return pointNumbers[intersections.get(id).location];
+  }
+  function intersectionDistance(a, b) {
+    const pa = intersectionID_to_gps(a);
+    const pb = intersectionID_to_gps(b);
+    //replace with HAVERSINE
+    const ret = Math.sqrt(((pb.x - pa.x) ** 2) + ((pb.y - pa.y) ** 2));
+    if(Number.isNaN(ret)) {
+      throw new TypeError('no nans!');
+    }
+    return ret;
+  }
+
+  perNodeInfo.set(start, {
+    cost_so_far: 0,
+  });
+
   while(bestNodes.length) {
-    await promiseTimeout(1);
+    await promiseTimeout(10);
     bestNodes.sort(sortFunction);
     const currentIntersection = bestNodes.pop();
     if(currentIntersection === finish) {
@@ -99,20 +149,25 @@ onmessage = async function(evt) {
       break;
     }
     visitedNodes.add(currentIntersection);
-    const newIntersections = new Set();
+    const newIntersections = new Map();
     for(let node of intersections.get(currentIntersection).nodes) {
       const road = roads.get(node);
       //console.log(road);
-      newIntersections.add(road.F_INTR_ID);
-      newIntersections.add(road.T_INTR_ID);
+      newIntersections.set(road.F_INTR_ID, {roadLength: intersectionDistance(road.F_INTR_ID, road.T_INTR_ID)});
+      newIntersections.set(road.T_INTR_ID, {roadLength: intersectionDistance(road.F_INTR_ID, road.T_INTR_ID)});
     }
 
-    for(let node of newIntersections.values()) {
+    for(let [node, {roadLength}] of newIntersections.entries()) {
       if(visitedNodes.has(node)) {
         continue;
       }
-      uColors[intersections.get(node).location] = 0xFFFF0000;
+      //FIXME COLOR ALL ROAD SEGMENTS
+      uColors[intersections.get(node).location] = 0xFFFF0000; //turn it blue
+      perNodeInfo.set(node, {
+        cost_so_far: perNodeInfo.get(currentIntersection).cost_so_far + roadLength,
+      });
       bestNodes.push(node);
     }
+    //console.log(perNodeInfo);
   }
 };
