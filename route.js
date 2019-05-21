@@ -142,7 +142,7 @@ onmessage = async function(evt) {
 
   while(bestNodes.length) {
     await promiseTimeout(10);
-    bestNodes.sort(sortFunction);
+    bestNodes.sort(sortFunction); // replace with a Binary Tree of some kind
     const currentIntersection = bestNodes.pop();
     if(currentIntersection === finish) {
       console.log('all done');
