@@ -12,6 +12,13 @@ class canvas_circle extends HTMLCanvasElement {
       f32Viewport[3] -= deltaY / 1000.0;
     });
 
+    document.addEventListener('mousemove', ({button, buttons, clientX, clientY, layerX, layerY, movementX, movementY, offsetX, offsetY, pageX, pageY, screenX, screenY, x, y})=> {
+      if(buttons === 1) {
+        f32Viewport[0] += movementX * 0.001 / 2.0 ** f32Viewport[3];
+        f32Viewport[1] -= movementY * 0.002 / 2.0 ** f32Viewport[3];
+      }
+    });
+
     document.addEventListener('keydown', (ev)=> {
       if(ev.key === 'a') { f32Viewport[0] += 0.01 / 2.0 ** f32Viewport[3]; }
       if(ev.key === 'd') { f32Viewport[0] -= 0.01 / 2.0 ** f32Viewport[3]; }
