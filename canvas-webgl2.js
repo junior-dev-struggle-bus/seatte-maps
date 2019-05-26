@@ -35,3 +35,7 @@ class canvas_circle extends HTMLCanvasElement {
 };
 
 customElements.define('canvas-webgl2', canvas_circle, {extends: 'canvas'});
+
+document.querySelector('.make-fullscreen').addEventListener('click', ()=>{
+  document.querySelector('canvas[is="canvas-webgl2"]').requestFullscreen({navigationUI: 'hide'});
+});
