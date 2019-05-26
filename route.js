@@ -107,7 +107,7 @@ onmessage = async function(evt) {
 
   const uColors = new Uint32Array(sbColors);
 
-  uColors.forEach((v, i , a)=> a[i] = 0x00404040);
+  uColors.forEach((v, i , a)=> a[i] = 0x40FFFFFF);
 
   const start = [...intersections.keys()][(Math.random() * intersections.size) >>> 0];
   const finish = [...intersections.keys()][(Math.random() * intersections.size) >>> 0];

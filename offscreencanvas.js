@@ -138,6 +138,9 @@ onmessage = async function(evt) {
 
   const ulViewport = gl.getUniformLocation(shaderProgram, 'offsetRotScale');
 
+  gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+  gl.enable(gl.BLEND);
+
   function render(time) {
     gl.clearColor(0.0, 0.0, 0.0, 1.0);  // Clear to black, fully opaque
     gl.clearDepth(1.0);                 // Clear everything
@@ -148,6 +151,7 @@ onmessage = async function(evt) {
     gl.uniform4fv(ulViewport, f32Viewport);
     gl.bufferData(gl.ARRAY_BUFFER, uColors, gl.STATIC_DRAW);
     gl.drawElements(gl.LINES, i32Elements.length, gl.UNSIGNED_INT, 0);
+    //gl.drawElements(gl.POINTS, i32Elements.length, gl.UNSIGNED_INT, 0);
     requestAnimationFrame(render);
   }
 
