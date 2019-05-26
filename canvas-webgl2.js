@@ -8,6 +8,10 @@ class canvas_circle extends HTMLCanvasElement {
     f32Viewport[2] = 0;
     f32Viewport[3] = 2.499999761581421;
 
+    document.addEventListener('wheel', ({deltaY})=> {
+      f32Viewport[3] -= deltaY / 1000.0;
+    });
+
     document.addEventListener('keydown', (ev)=> {
       if(ev.key === 'a') { f32Viewport[0] += 0.01 / 2.0 ** f32Viewport[3]; }
       if(ev.key === 'd') { f32Viewport[0] -= 0.01 / 2.0 ** f32Viewport[3]; }
@@ -15,7 +19,6 @@ class canvas_circle extends HTMLCanvasElement {
       if(ev.key === 's') { f32Viewport[1] += 0.01 / 2.0 ** f32Viewport[3]; }
       if(ev.key === '+') { f32Viewport[3] += 0.1; }
       if(ev.key === '-') { f32Viewport[3] -= 0.1; }
-      console.log(ev.key, f32Viewport);
     });
 
     const worker = new Worker('offscreencanvas.js'); 
